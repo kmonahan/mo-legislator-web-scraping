@@ -228,3 +228,22 @@ class MOLegislation:
         with pandas.ExcelWriter("Legislator_Roster_2026.xlsx") as writer:
             senate_roster.to_excel(writer, sheet_name="MO Senate", index=False)
             senate_committees.to_excel(writer, sheet_name="Senate Committees")
+
+
+    def create_joint_roster(self):
+        self._get_house_members()
+        self._get_house_committees()
+        house_roster = pandas.DataFrame.from_dict(self._house_legislators, orient='index')
+        house_committees = pandas.DataFrame.from_dict(self._house_committees, orient='index')
+        self._get_senate_members()
+        self._get_senate_committees()
+        self._driver.close()
+        senate_roster = pandas.DataFrame.from_dict(self._senate_legislators, orient='index')
+        senate_committees = pandas.DataFrame(self._senate_committees)
+        senate_committees = senate_committees.set_index(['committee', 'district']).sort_values(
+            by=['committee', 'leadership_position', 'last_name'])
+        with pandas.ExcelWriter("Legislator_Roster_2026.xlsx") as writer:
+            house_roster.to_excel(writer, sheet_name="MO House", index=False)
+            house_committees.to_excel(writer, sheet_name="House Committees")
+            senate_roster.to_excel(writer, sheet_name="MO Senate", index=False)
+            senate_committees.to_excel(writer, sheet_name="Senate Committees")
