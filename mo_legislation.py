@@ -107,6 +107,7 @@ class MOLegislation:
         district = name_district[1].split(' ')[1:]
         district = ' '.join(district)
         self._senate_legislators[district] = {'first_name': ' '.join(name[:-1]), 'last_name': ' '.join(name[-1:]),
+                                              'leadership_position': None,
             'district': int(district), 'party': None, 'room': None, 'home_town': None, 'year_entered': None,
             'phone': None, 'email': None}
         match = re.search('id=(\\d)+', link.get_attribute('href'))
@@ -120,9 +121,14 @@ class MOLegislation:
             self._driver.execute_script("arguments[0].scrollIntoView({block: 'start', behavior: 'instant'});", link)
             self._wait.until(EC.element_to_be_clickable(link))
             link.click()
-        details = self._driver.find_elements(By.CLASS_NAME, "detail-grid__value")
+        details = self._driver.find_elements(By.CSS_SELECTOR, ".main-order .card__body .detail-grid__value")
         if len(details) >= 4:
-            self._senate_legislators[district]['party'] = details[0].text.strip()
+            party_text = details[0].text.split('-')
+            if len(party_text) == 2:
+                self._senate_legislators[district]['leadership_position'] = party_text[0].strip()
+                self._senate_legislators[district]['party'] = party_text[1].strip()
+            else:
+                self._senate_legislators[district]['party'] = details[0].text.strip()
             self._senate_legislators[district]['year_entered'] = details[2].text.strip()
         contact = self._driver.find_element(By.CSS_SELECTOR, ".sidebar-order .card:first-child .card__body").text
         room_match = re.search('Rm\\. (\\d+)', contact)
